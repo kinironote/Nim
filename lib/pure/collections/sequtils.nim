@@ -419,6 +419,8 @@ template filterIt*(s, pred: untyped): untyped =
   var result = newSeq[type(s[0])]()
   for it {.inject.} in items(s):
     if pred: result.add(it)
+  if len(result) > 0:
+    shallow(result)
   result
 
 template keepItIf*(varSeq: seq, pred: untyped) =
@@ -527,11 +529,15 @@ template toSeq*(iter: untyped): untyped =
       for x in iter2:
         result[i] = x
         inc i
+      if iter2.len > 0:
+        shallow(result)
       result
   else:
     var result: seq[type(iter)] = @[]
     for x in iter:
       result.add(x)
+    if len(result) > 0:
+      shallow(result)
     result
 
 template foldl*(sequence, operation: untyped): untyped =
@@ -658,6 +664,8 @@ template mapIt*(s, typ, op: untyped): untyped =
   var result: seq[typ] = @[]
   for it {.inject.} in items(s):
     result.add(op)
+  if len(result) > 0:
+    shallow(result)
   result
 
 template mapIt*(s: typed, op: untyped): untyped =
@@ -695,11 +703,15 @@ template mapIt*(s: typed, op: untyped): untyped =
       for it {.inject.} in s2:
         result[i] = op
         i += 1
+      if s2.len > 0:
+        shallow(result)
       result
   else:
     var result: seq[outType] = @[]
     for it {.inject.} in s:
       result.add(op)
+    if len(result) > 0:
+      shallow(result)
     result
 
 template applyIt*(varSeq, op: untyped) =
@@ -737,6 +749,8 @@ template newSeqWith*(len: int, init: untyped): untyped =
   var result = newSeq[type(init)](len)
   for i in 0 ..< len:
     result[i] = init
+  if len > 0:
+    shallow(result)
   result
 
 proc mapLitsImpl(constructor: NimNode; op: NimNode; nested: bool;
