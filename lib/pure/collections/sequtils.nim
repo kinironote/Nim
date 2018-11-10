@@ -419,7 +419,11 @@ template filterIt*(s, pred: untyped): untyped =
   var result = newSeq[type(s[0])]()
   for it {.inject.} in items(s):
     if pred: result.add(it)
-  result
+  when defined(nimNewRuntime):
+    move(result)
+  else:
+    shallow(result)
+    result
 
 template keepItIf*(varSeq: seq, pred: untyped) =
   ## Convenience template around the ``keepIf`` proc to reduce typing.
@@ -527,12 +531,20 @@ template toSeq*(iter: untyped): untyped =
       for x in iter2:
         result[i] = x
         inc i
-      result
+      when defined(nimNewRuntime):
+        move(result)
+      else:
+        shallow(result)
+        result
   else:
     var result: seq[type(iter)] = @[]
     for x in iter:
       result.add(x)
-    result
+    when defined(nimNewRuntime):
+      move(result)
+    else:
+      shallow(result)
+      result
 
 template foldl*(sequence, operation: untyped): untyped =
   ## Template to fold a sequence from left to right, returning the accumulation.
@@ -658,7 +670,11 @@ template mapIt*(s, typ, op: untyped): untyped =
   var result: seq[typ] = @[]
   for it {.inject.} in items(s):
     result.add(op)
-  result
+  when defined(nimNewRuntime):
+    move(result)
+  else:
+    shallow(result)
+    result
 
 template mapIt*(s: typed, op: untyped): untyped =
   ## Convenience template around the ``map`` proc to reduce typing.
@@ -695,12 +711,20 @@ template mapIt*(s: typed, op: untyped): untyped =
       for it {.inject.} in s2:
         result[i] = op
         i += 1
-      result
+      when defined(nimNewRuntime):
+        move(result)
+      else:
+        shallow(result)
+        result
   else:
     var result: seq[outType] = @[]
     for it {.inject.} in s:
       result.add(op)
-    result
+    when defined(nimNewRuntime):
+      move(result)
+    else:
+      shallow(result)
+      result
 
 template applyIt*(varSeq, op: untyped) =
   ## Convenience template around the mutable ``apply`` proc to reduce typing.
@@ -737,7 +761,11 @@ template newSeqWith*(len: int, init: untyped): untyped =
   var result = newSeq[type(init)](len)
   for i in 0 ..< len:
     result[i] = init
-  result
+  when defined(nimNewRuntime):
+    move(result)
+  else:
+    shallow(result)
+    result
 
 proc mapLitsImpl(constructor: NimNode; op: NimNode; nested: bool;
                  filter = nnkLiterals): NimNode =
